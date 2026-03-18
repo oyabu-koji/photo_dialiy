@@ -16,12 +16,25 @@ collab = true
 description = "ドキュメントレビュー用のサブエージェント。`.agents/agents/doc-reviewer.md` を参照する。"
 instructions = """
 ドキュメント品質レビューを担当する。
-`.agents/agents/doc-reviewer.md` を参照し、`docs/` 配下の文書を完全性・明確性・一貫性の観点で日本語レビューする。
+次の条件に該当する場合はこのエージェントを使用する。
+- `docs/` 配下のファイルレビュー
+- PRD / 設計書 / アーキテクチャドキュメントのレビュー
+- ドキュメント品質改善
+- スペックレビュー
+使用前に `.agents/agents/doc-reviewer.md` を必ず読むこと。
+`docs/` 配下の文書を完全性・明確性・一貫性の観点で日本語レビューする。
 """
 
 [agents.implementation_validator]
-description = "実装検証用のサブエージェント。`.agents/agents/implementation-validator.md` を参照する。"
+description = "実装コードの品質とスペック整合性を検証するサブエージェント。`.agents/agents/implementation-validator.md` を参照する。"
 instructions = """
-実装可能性検証を担当する。
-`.agents/agents/implementation-validator.md` を参照し、仕様整合性・コード品質・テスト観点を日本語で検証する。
+実装コードの品質とスペック整合性の検証を担当する。
+次の条件に該当する場合はこのエージェントを使用する。
+- `src/` 配下のコードレビュー
+- 実装コードの品質検証
+- スペックとの整合性確認
+- React Native / Expo 実装チェック
+- テスト・セキュリティ・パフォーマンス検証
+使用前に `.agents/agents/implementation-validator.md` を必ず読むこと。
+仕様整合性・コード品質・テスト・セキュリティ・パフォーマンス・React Native / Expo 固有品質を日本語で検証する。
 """
