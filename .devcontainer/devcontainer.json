@@ -1,0 +1,11 @@
+{
+  "name": "react-native-expo-project-template",
+  "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+  "workspaceFolder": "/workspaces/project",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    }
+  },
+  "postCreateCommand": "if [ -f package.json ]; then npm install; fi"
+}

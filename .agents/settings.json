@@ -1,0 +1,12 @@
+{
+  "defaultSkills": [
+    "prd-writing",
+    "functional-design",
+    "architecture-design",
+    "repository-structure",
+    "development-guidelines",
+    "glossary-creation",
+    "steering"
+  ],
+  "notes": "Use /skills or $skill-name for explicit skill invocation."
+}
