@@ -45,6 +45,22 @@ description: steering の tasklist に従って機能を実装する
 
 ---
 
+## 2.5 durable docs 影響確認
+
+実装開始前に、今回の変更が以下の durable docs に影響するか確認する
+
+- `docs/product-requirements.md`
+- `docs/functional-design.md`
+- `docs/architecture.md`
+- `docs/repository-structure.md`
+- `docs/development-guidelines.md`
+- `docs/glossary.md`
+
+安定した仕様・設計・用語の変更がある場合は、
+実装と同じ作業単位で更新する。
+
+---
+
 ## 3. 実装
 
 tasklist.md に書かれているタスクを
@@ -55,18 +71,25 @@ tasklist.md に書かれているタスクを
 - 一度に複数タスクを実装してはいけない
 - 1タスク実装したら tasklist.md を更新する
 - 必要なら design.md を更新する
+- 安定した仕様・設計・用語変更が発生した場合、影響する `docs/` を更新する
+- `docs/` 更新が必要な場合、未更新のままタスク完了にしてはいけない
+- 実装と `.steering` と durable docs が矛盾した場合、先にドキュメントを同期する
 
 ---
 
 ## 4. 品質確認
 
-実装後に以下を実行する
+実装後に以下を確認する
 
-npm run lint
+- `tasklist.md` が最新化されている
+- 影響する durable docs が更新されている
+- 実装と `docs/` / `.steering/` に不整合がない
 
-必要に応じて
+以下を実行する
 
-npx expo start
+- `npm run lint`
+- `npm test`
+- 必要に応じて `npx expo start`
 
 ---
 
@@ -74,12 +97,22 @@ npx expo start
 
 implementation-validator サブエージェントを呼び出す
 
+implementation-validator には、今回変更した実装ファイル・関連設定ファイル・durable docs・steering を渡す。
+`src` に固定せず、変更対象に応じて指定する。
+
+例:
+
 ```
 subagent:
   agent: implementation-validator
   input:
     paths:
+      - App.jsx
+      - index.js
+      - app.json
       - src
+      - docs
+      - .steering/[YYYYMMDD]-[feature-name]
 ```
 
 ---
@@ -87,5 +120,6 @@ subagent:
 # 完了条件
 
 - tasklist.md のタスクが完了している
+- 影響する durable docs が更新されている
 - lint エラーがない
 - validator による検証が完了している

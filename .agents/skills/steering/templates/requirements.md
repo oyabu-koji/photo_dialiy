@@ -11,21 +11,25 @@
 ## 実装対象の機能
 
 ### 1. {機能名1}
+
 - {具体的な機能説明}
 - {ユーザーができるようになること}
 
 ### 2. {機能名2}
+
 - {具体的な機能説明}
 - {ユーザーができるようになること}
 
 ## 受け入れ条件
 
 ### {機能名1}
+
 - [ ] {検証可能な条件1}
 - [ ] {検証可能な条件2}
 - [ ] {検証可能な条件3}
 
 ### {機能名2}
+
 - [ ] {検証可能な条件1}
 - [ ] {検証可能な条件2}
 
@@ -33,6 +37,21 @@
 
 - {定量的な目標があれば記述}
 - {定性的な目標があれば記述}
+
+## durable docs 影響
+
+今回の変更で更新が必要な durable docs:
+
+- [ ] `docs/product-requirements.md`
+- [ ] `docs/functional-design.md`
+- [ ] `docs/architecture.md`
+- [ ] `docs/repository-structure.md`
+- [ ] `docs/development-guidelines.md`
+- [ ] `docs/glossary.md`
+
+更新理由:
+
+- {なぜ更新が必要か}
 
 ## スコープ外
 

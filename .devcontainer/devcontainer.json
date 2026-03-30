@@ -1,7 +1,7 @@
 {
-  "name": "react-native-expo-project-template",
+  "name": "photo_diary devcontainer (optional)",
   "image": "mcr.microsoft.com/devcontainers/base:bookworm",
-  "workspaceFolder": "/workspaces/project",
+  "workspaceFolder": "/workspaces/photo_diary",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "22"

@@ -13,11 +13,12 @@ tools: Read, Grep, Glob
 
 実装されたコードが以下の基準を満たしているか検証します:
 1. スペック(PRD、機能設計書、アーキテクチャ設計書)との整合性
-2. コード品質(コーディング規約、ベストプラクティス)
-3. テストカバレッジ
-4. セキュリティ
-5. パフォーマンス
-6. React Native / Expo 固有の実装品質
+2. durable docs と実装の同期
+3. コード品質(コーディング規約、ベストプラクティス)
+4. テストカバレッジ
+5. セキュリティ
+6. パフォーマンス
+7. React Native / Expo 固有の実装品質
 
 ## 検証観点
 
@@ -34,7 +35,20 @@ tools: Read, Grep, Glob
 - ⚠️ 一部相違: 軽微な相違がある
 - ❌ 不一致: 重大な相違がある
 
-### 2. コード品質
+### 2. durable docs 同期
+
+**チェック項目**:
+- [ ] 実装で確定した仕様変更が `docs/` に反映されているか
+- [ ] `.steering` の設計判断と durable docs が矛盾していないか
+- [ ] データモデル、画面責務、用語変更が `docs/functional-design.md` / `docs/glossary.md` に反映されているか
+- [ ] stable な技術判断が `docs/architecture.md` / `docs/repository-structure.md` / `docs/development-guidelines.md` に反映されているか
+
+**評価基準**:
+- ✅ 同期済み: 実装と durable docs に差分がない
+- ⚠️ 一部不足: 軽微な未反映がある
+- ❌ 未同期: 実装判断が docs に反映されていない
+
+### 3. コード品質
 
 **チェック項目**:
 - [ ] コーディング規約に従っているか
@@ -48,7 +62,7 @@ tools: Read, Grep, Glob
 - ⚠️ 改善推奨: 一部改善の余地あり
 - ❌ 低品質: 重大な問題がある
 
-### 3. テストカバレッジ
+### 4. テストカバレッジ
 
 **チェック項目**:
 - [ ] ユニットテストが書かれているか
@@ -62,7 +76,7 @@ tools: Read, Grep, Glob
 - ⚠️ 改善推奨: カバレッジ60-80%
 - ❌ 不十分: カバレッジ60%未満
 
-### 4. セキュリティ
+### 5. セキュリティ
 
 **チェック項目**:
 - [ ] 入力検証が実装されているか
@@ -76,7 +90,7 @@ tools: Read, Grep, Glob
 - ⚠️ 要注意: 一部改善が必要
 - ❌ 危険: 重大な脆弱性あり
 
-### 5. パフォーマンス
+### 6. パフォーマンス
 
 **チェック項目**:
 - [ ] パフォーマンス要件を満たしているか
@@ -90,7 +104,7 @@ tools: Read, Grep, Glob
 - ⚠️ 改善推奨: 最適化の余地あり
 - ❌ 問題あり: パフォーマンス要件未達
 
-### 6. React Native / Expo 固有チェック
+### 7. React Native / Expo 固有チェック
 
 **チェック項目**:
 - [ ] screen / component / hook / service の責務が分離されているか
@@ -113,7 +127,12 @@ tools: Read, Grep, Glob
 - `docs/product-requirements.md`
 - `docs/functional-design.md`
 - `docs/architecture.md`
+- `docs/repository-structure.md`
 - `docs/development-guidelines.md`
+- `docs/glossary.md`
+- 対象 `.steering/[YYYYMMDD]-[feature-name]/requirements.md`
+- 対象 `.steering/[YYYYMMDD]-[feature-name]/design.md`
+- 対象 `.steering/[YYYYMMDD]-[feature-name]/tasklist.md`
 
 ### ステップ2: 実装コードの分析
 
@@ -124,7 +143,7 @@ tools: Read, Grep, Glob
 
 ### ステップ3: 各観点での検証
 
-上記6つの観点(スペック準拠、コード品質、テストカバレッジ、セキュリティ、パフォーマンス、React Native / Expo固有品質)から検証します。
+上記7つの観点(スペック準拠、durable docs 同期、コード品質、テストカバレッジ、セキュリティ、パフォーマンス、React Native / Expo固有品質)から検証します。
 
 ### ステップ4: 検証結果の報告
 
@@ -143,6 +162,7 @@ tools: Read, Grep, Glob
 | 観点 | 評価 | スコア |
 |-----|------|--------|
 | スペック準拠 | [✅/⚠️/❌] | [1-5] |
+| durable docs 同期 | [✅/⚠️/❌] | [1-5] |
 | コード品質 | [✅/⚠️/❌] | [1-5] |
 | テストカバレッジ | [✅/⚠️/❌] | [1-5] |
 | セキュリティ | [✅/⚠️/❌] | [1-5] |
@@ -153,6 +173,8 @@ tools: Read, Grep, Glob
 
 **厳格運用ルール**:
 - [必須] の問題が1件でもある場合、総合評価を ✅ にしない
+- stable な仕様変更が実装に存在するのに durable docs が未更新なら `[必須]`
+- `.steering` と durable docs が食い違う場合は原則 `[必須]` または `[推奨]` として指摘する
 - Hook規約違反、Expo API直呼び、ユーザー体験を損なう再描画リスクは原則として厳しめに扱う
 
 ### 良い実装
@@ -213,6 +235,14 @@ tools: Read, Grep, Glob
 - **影響**: [この相違の影響]
 - **推奨**: [どうすべきか]
 
+### durable docs との相違点
+
+**相違点1**: [相違内容]
+- **実装**: [実際の実装]
+- **未反映 docs**: [どの docs が古いか]
+- **影響**: [この相違の影響]
+- **推奨**: [どこを更新すべきか]
+
 ### 次のステップ
 
 1. [最優先で対応すべきこと]
@@ -232,8 +262,9 @@ npm run lint
 ### テスト実行
 ```bash
 npm test
-npm run test:coverage
 ```
+
+`npm run test:coverage` は script が定義されている場合のみ実行する。
 
 ### Expo起動確認
 ```bash
