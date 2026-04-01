@@ -30,6 +30,8 @@ npx expo start
 npx expo start --tunnel
 ```
 
+- Homebrew Node 環境で `@expo/ngrok` のグローバルインストール確認が繰り返される場合は、`NODE_PATH="$(npm root -g)" npx expo start --tunnel` を使う。キャッシュや tunnel 起動失敗の再試行時は `--clear` を追加する
+
 ## コーディング規約
 
 ### JavaScript / JSDoc

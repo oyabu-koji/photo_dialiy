@@ -204,7 +204,7 @@ project-root/
 
 **配置ファイル**:
 - `screens/MapScreen.jsx`
-- `components/EntryMapMarker.jsx`
+- `components/EntryMapView.jsx`
 - `hooks/useEntryMap.js`
 - `logic/buildMapPins.js`
 

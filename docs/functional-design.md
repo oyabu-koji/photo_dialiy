@@ -185,13 +185,16 @@ graph TB
 
 **責務**:
 - 地図上のイベントピン表示
-- ピンプレビューと詳細遷移
+- built-in callout によるピンプレビューと詳細遷移
+- 空状態 / エラー状態 / 再読込状態の表示
+- タブ復帰時の再読込結果を反映する
 
 **インターフェース**:
 ```javascript
 /**
  * @typedef {Object} MapScreenProps
  * @property {(entryId: string) => void} onOpenEntry
+ * @property {number} refreshKey
  */
 ```
 
@@ -206,6 +209,7 @@ graph TB
 - 既存イベント編集
 - 写真一覧、音声録音、位置解決、保存のフォーム表示
 - 編集モード初期化時の既存値表示
+- タイトル入力欄を上部に配置し、キーボード表示時も編集状態を見失いにくくする
 
 **インターフェース**:
 ```javascript
@@ -237,6 +241,7 @@ graph TB
 - 保存済みイベントの閲覧
 - 写真、音声、位置、日付、タイトルの表示
 - `Edit` から編集モードへ遷移する導線の提供
+- 写真はプレビュー、音声は再生コントロールとして表示し、 raw path は UI に露出しない
 
 **インターフェース**:
 ```javascript
@@ -309,30 +314,55 @@ graph TB
 ### useEntryMap
 
 **責務**:
-- 地図用ピンデータの生成
+- 地図用ピンデータの読み込みと生成
 - 初期表示範囲の計算
+- 選択中ピンの管理
+- タブ復帰時や明示再読込時の再フェッチ
 
 **インターフェース**:
 ```javascript
 /**
- * @typedef {Object} EntryMapPin
- * @property {string} entryId
+ * @typedef {Object} EntryMapSummary
+ * @property {string} id
+ * @property {string} title
+ * @property {string} eventDate
+ * @property {string | null} placeName
+ * @property {string | null} coverPhotoUri
  * @property {number} lat
  * @property {number} lng
- * @property {string | null} thumbnailUri
+ */
+/**
+ * @typedef {Object} EntryMapPin
+ * @property {string} id
+ * @property {string} title
+ * @property {string} eventDate
+ * @property {string | null} placeName
+ * @property {string | null} coverPhotoUri
+ * @property {{ latitude: number, longitude: number }} coordinate
+ */
+/**
+ * @typedef {Object} EntryMapRegion
+ * @property {number} latitude
+ * @property {number} longitude
+ * @property {number} latitudeDelta
+ * @property {number} longitudeDelta
  */
 /**
  * @typedef {Object} UseEntryMapResult
  * @property {EntryMapPin[]} pins
+ * @property {EntryMapRegion | null} initialRegion
  * @property {LoadStatus} status
- * @property {() => Promise<void>} reload
+ * @property {string | null} errorMessage
+ * @property {string | null} selectedEntryId
+ * @property {EntryMapPin | null} selectedPin
+ * @property {(entryId: string) => void} selectPin
+ * @property {() => void} reload
  */
 ```
 
 **依存関係**:
 - `entryRepository`
 - `buildMapPins`
-- `calculateMapRegion`
 
 ### entryRepository
 
@@ -349,6 +379,7 @@ graph TB
  * @property {(draft: AddEntryFormState) => Promise<string>} saveEntry
  * @property {(entryId: string) => Promise<EntryDetailAggregate>} getEntryDetailAggregate
  * @property {() => Promise<Entry[]>} listEntries
+ * @property {() => Promise<EntryMapSummary[]>} listEntriesForMap
  */
 ```
 
@@ -434,8 +465,9 @@ sequenceDiagram
 **フロー説明**:
 1. ユーザーが写真を選択し、`photoPickerService` が asset と EXIF を返す
 2. `useAddEntryForm` が位置情報とタイトル候補を生成する
-3. ユーザーは必要に応じて音声を録音し、保存を実行する
-4. `entryRepository` が Entry と Photo を永続化し、保存完了後に一覧へ戻る
+3. 画面上部のタイトル欄は自動生成値を初期表示し、必要に応じてすぐ編集できる
+4. ユーザーは必要に応じて音声を録音し、保存を実行する
+5. `entryRepository` が Entry と Photo を永続化し、保存完了後に `EntryDetailScreen` へ遷移する
 
 ### イベント詳細閲覧
 
@@ -456,8 +488,37 @@ sequenceDiagram
 **フロー説明**:
 1. 一覧または地図から `entryId` を選択する
 2. `useEntryDetail` が `EntryDetailAggregate` を取得する
-3. 詳細画面で写真、音声、位置、日付を表示する
+3. 詳細画面で写真プレビュー、音声再生コントロール、位置、日付を表示する
 4. ユーザーは `Edit` を押して `AddEntryScreen` の編集モードへ遷移できる
+
+### 地図表示と詳細遷移
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant MapScreen
+    participant MapHook as useEntryMap
+    participant Repo as entryRepository
+    participant MapView as EntryMapView
+
+    User->>MapScreen: Map タブを開く
+    MapScreen->>MapHook: load(refreshKey)
+    MapHook->>Repo: listEntriesForMap()
+    Repo-->>MapHook: entries with coordinates
+    MapHook-->>MapScreen: pins + initialRegion
+    MapScreen->>MapView: render markers
+    User->>MapView: marker を押す
+    MapView-->>User: built-in callout を表示
+    User->>MapView: 詳細を見る
+    MapView->>MapScreen: onOpenEntry(entryId)
+```
+
+**フロー説明**:
+1. Map タブ表示時または focus 復帰時に `useEntryMap` が再読込される
+2. `entryRepository.listEntriesForMap()` は位置情報付きイベントを、地図表示に必要な最小項目へ絞って返す
+3. `buildMapPins` が marker と初期表示範囲を構築する
+4. `EntryMapView` が built-in callout で代表写真、タイトル、日付、位置名を表示する
+5. callout の操作から `EntryDetailScreen` へ遷移する
 
 ### イベント編集
 
@@ -483,8 +544,9 @@ sequenceDiagram
 **フロー説明**:
 1. `EntryDetailScreen` は閲覧専用で、編集時のみ `Edit` 導線を提供する
 2. `AddEntryScreen` は `{ mode: 'edit', entryId }` を受けて編集モードで初期化される
-3. 編集モードでは既存写真、音声、位置、タイトルを初期表示する
+3. 編集モードでは既存写真のプレビュー、音声の状態表示、位置、タイトルを初期表示する
 4. 保存時は新規作成と更新を同じフォームから分岐処理する
+5. 既存音声の削除は許可し、保存後は `EntryDetailScreen` に戻る
 
 ## 状態遷移
 
@@ -530,7 +592,9 @@ stateDiagram-v2
 - EntryListScreen から EntryDetailScreen へ遷移できること
 - EntryDetailScreen の `Edit` から AddEntryScreen の編集モードへ遷移できること
 - AddEntryScreen の編集モードで既存値が初期表示されること
+- 写真と音声の raw path を UI に表示しないこと
 - MapScreen のピン選択から詳細を開けること
+- MapScreen が refreshKey 更新時に再読込されること
 - 権限拒否時に recoverable なエラー UI を表示すること
 
 ### 起動確認
@@ -545,6 +609,9 @@ npx expo start
 
 - 写真選択後に即座にサムネイルを表示し、保存前の不安を減らす
 - タイトルは自動生成を基本とし、任意編集は補助機能に留める
+- タイトル入力は画面上部に寄せ、キーボード表示時も内容確認と編集を継続しやすくする
 - `EntryDetailScreen` は閲覧に集中させ、編集は `AddEntryScreen` に集約する
+- 写真と音声はプレビューや状態文言で示し、ファイルパス文字列をそのまま見せない
 - 地図は全イベントが入る初期表示範囲を計算し、最初の文脈把握を優先する
+- 地図プレビューは built-in callout で短く提示し、詳細閲覧は `EntryDetailScreen` に集約する
 - 音声や位置情報が欠けてもイベント保存自体を阻害しない

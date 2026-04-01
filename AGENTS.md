@@ -69,6 +69,15 @@ This template is the starting point for an AI-driven React Native + Expo + JavaS
 - 短期タスク管理は `.steering/`、長期的に残す設計文書は `docs/` に置きます。
 - 安定した要件や設計判断が変わったら `docs/` を更新します。
 
+## Troubleshooting
+
+- If `npx expo start --tunnel` repeatedly prompts to install `@expo/ngrok` even after global installation, start Expo with `NODE_PATH="$(npm root -g)" npx expo start --tunnel`. Add `--clear` when retrying after cache or tunnel startup issues.
+- This workaround is for Homebrew Node global module resolution on this machine
+
+### 日本語説明
+- `npx expo start --tunnel` 実行時に `@expo/ngrok` のグローバルインストール確認が繰り返される場合は、`NODE_PATH="$(npm root -g)" npx expo start --tunnel` を使います。キャッシュや tunnel 起動失敗の再試行時は `--clear` を追加します。
+- これはこのマシンの Homebrew Node におけるグローバルモジュール解決を補う回避策です。
+
 ## Expected Directories
 
 ### 日本語説明
