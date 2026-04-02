@@ -19,13 +19,13 @@ describe('App', () => {
     const { getByTestId, getByText } = render(<App />);
 
     await waitFor(() => {
-      expect(getByText('イベント一覧')).toBeTruthy();
+      expect(getByTestId('create-entry-fab')).toBeTruthy();
     });
 
     fireEvent.press(getByText('Map'));
 
     await waitFor(() => {
-      expect(getByText('地図で振り返る')).toBeTruthy();
+      expect(getByTestId('map-marker-entry-1')).toBeTruthy();
     });
 
     fireEvent.press(getByTestId('map-marker-entry-1'));
@@ -37,7 +37,8 @@ describe('App', () => {
     fireEvent.press(getByTestId('map-callout-entry-1'));
 
     await waitFor(() => {
-      expect(getByText('Entry Detail')).toBeTruthy();
+      expect(getByText('Edit')).toBeTruthy();
+      expect(getByTestId('entry-location-map')).toBeTruthy();
     });
   });
 
@@ -45,22 +46,20 @@ describe('App', () => {
     const { getByTestId, getByText, getByDisplayValue } = render(<App />);
 
     await waitFor(() => {
-      expect(getByText('イベント一覧')).toBeTruthy();
+      expect(getByTestId('entry-card-entry-1')).toBeTruthy();
     });
 
     fireEvent.press(getByTestId('entry-card-entry-1'));
 
     await waitFor(() => {
-      expect(getByText('Entry Detail')).toBeTruthy();
+      expect(getByText('Edit')).toBeTruthy();
     });
 
     fireEvent.press(getByText('Edit'));
 
     await waitFor(() => {
-      expect(getByText('イベントを編集')).toBeTruthy();
+      expect(getByDisplayValue('神田川の散歩 2026/03/28')).toBeTruthy();
     });
-
-    expect(getByDisplayValue('神田川の散歩 2026/03/28')).toBeTruthy();
   });
 
   it('reloads the timeline after returning from detail', async () => {
@@ -68,13 +67,13 @@ describe('App', () => {
     const { getByTestId, getByText } = render(<AppNavigator navigationRef={navigationRef} />);
 
     await waitFor(() => {
-      expect(getByText('イベント一覧')).toBeTruthy();
+      expect(getByTestId('entry-card-entry-1')).toBeTruthy();
     });
 
     fireEvent.press(getByTestId('entry-card-entry-1'));
 
     await waitFor(() => {
-      expect(getByText('Entry Detail')).toBeTruthy();
+      expect(getByText('Edit')).toBeTruthy();
     });
 
     const detail = await getEntryDetailAggregate('entry-1');
@@ -101,23 +100,25 @@ describe('App', () => {
 
   it('reloads the map after returning from detail', async () => {
     const navigationRef = createNavigationContainerRef();
-    const { getByTestId, getByText } = render(<AppNavigator navigationRef={navigationRef} />);
+    const { getAllByText, getByTestId, getByText } = render(
+      <AppNavigator navigationRef={navigationRef} />
+    );
 
     await waitFor(() => {
-      expect(getByText('イベント一覧')).toBeTruthy();
+      expect(getByTestId('entry-card-entry-1')).toBeTruthy();
     });
 
     fireEvent.press(getByText('Map'));
 
     await waitFor(() => {
-      expect(getByText('地図で振り返る')).toBeTruthy();
+      expect(getByTestId('map-marker-entry-1')).toBeTruthy();
     });
 
     fireEvent.press(getByTestId('map-marker-entry-1'));
     fireEvent.press(getByTestId('map-callout-entry-1'));
 
     await waitFor(() => {
-      expect(getByText('Entry Detail')).toBeTruthy();
+      expect(getByText('Edit')).toBeTruthy();
     });
 
     const detail = await getEntryDetailAggregate('entry-1');
@@ -138,13 +139,13 @@ describe('App', () => {
     });
 
     await waitFor(() => {
-      expect(getByText('地図で振り返る')).toBeTruthy();
+      expect(getByTestId('map-marker-entry-1')).toBeTruthy();
     });
 
     fireEvent.press(getByTestId('map-marker-entry-1'));
 
     await waitFor(() => {
-      expect(getByText('詳細から戻った後の地図タイトル')).toBeTruthy();
+      expect(getAllByText('詳細から戻った後の地図タイトル').length).toBeGreaterThan(0);
     });
   });
 });

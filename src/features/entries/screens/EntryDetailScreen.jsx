@@ -1,13 +1,35 @@
+import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { EntryLocationMapPreview } from '../components/EntryLocationMapPreview';
+import { EntryPhotoLightboxModal } from '../components/EntryPhotoLightboxModal';
 import { PhotoCarousel } from '../components/PhotoCarousel';
 import { VoicePlayer } from '../components/VoicePlayer';
-import { formatEntryDateLabel } from '../logic/createEntryTitle';
 import { useEntryDetail } from '../hooks/useEntryDetail';
 
 export function EntryDetailScreen({ entryId, onEditEntry, refreshKey = 0 }) {
   const { detail, status, errorMessage, reload } = useEntryDetail(entryId, refreshKey);
+  const scrollViewRef = useRef(null);
+  const scrollOffsetYRef = useRef(0);
+  const [restoredScrollOffsetY, setRestoredScrollOffsetY] = useState(0);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [isLightboxVisible, setIsLightboxVisible] = useState(false);
+
+  function handleOpenLightbox(photoIndex) {
+    setSelectedPhotoIndex(photoIndex);
+    setIsLightboxVisible(true);
+  }
+
+  function handleCloseLightbox() {
+    setIsLightboxVisible(false);
+    setRestoredScrollOffsetY(Math.round(scrollOffsetYRef.current));
+    scrollViewRef.current?.scrollTo?.({
+      x: 0,
+      y: scrollOffsetYRef.current,
+      animated: false,
+    });
+  }
 
   if (status === 'loading' && !detail) {
     return (
@@ -37,15 +59,18 @@ export function EntryDetailScreen({ entryId, onEditEntry, refreshKey = 0 }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.headerCard}>
-          <Text style={styles.overline}>Entry Detail</Text>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        onScroll={(event) => {
+          scrollOffsetYRef.current = event.nativeEvent.contentOffset.y;
+        }}
+        nativeID={`entry-detail-scroll-restored-${restoredScrollOffsetY}`}
+        ref={scrollViewRef}
+        scrollEventThrottle={16}
+        testID="entry-detail-scroll"
+      >
+        <View style={styles.headerRow}>
           <Text style={styles.title}>{detail.entry.title}</Text>
-          <Text style={styles.meta}>{formatEntryDateLabel(detail.entry.eventDate)}</Text>
-          <Text style={styles.meta}>{detail.entry.placeName || '位置なし'}</Text>
-          <Text style={styles.meta}>
-            {detail.entry.photoCount}枚 / sync: {detail.entry.syncStatus}
-          </Text>
           <Pressable
             accessibilityRole="button"
             onPress={() => onEditEntry(detail.entry.id)}
@@ -55,9 +80,20 @@ export function EntryDetailScreen({ entryId, onEditEntry, refreshKey = 0 }) {
           </Pressable>
         </View>
 
-        <PhotoCarousel photos={detail.photos} />
+        <EntryLocationMapPreview
+          lat={detail.entry.lat}
+          lng={detail.entry.lng}
+          placeName={detail.entry.placeName}
+        />
+        <PhotoCarousel onPhotoPress={handleOpenLightbox} photos={detail.photos} />
         <VoicePlayer voicePath={detail.entry.voicePath} />
       </ScrollView>
+      <EntryPhotoLightboxModal
+        initialIndex={selectedPhotoIndex}
+        onRequestClose={handleCloseLightbox}
+        photos={detail.photos}
+        visible={isLightboxVisible}
+      />
     </SafeAreaView>
   );
 }
@@ -68,42 +104,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#f2f5f7',
   },
   content: {
-    gap: 18,
-    padding: 20,
+    gap: 20,
+    padding: 16,
     paddingBottom: 36,
   },
-  headerCard: {
-    borderRadius: 24,
-    backgroundColor: '#1d3d4f',
-    padding: 20,
-  },
-  overline: {
-    textTransform: 'uppercase',
-    letterSpacing: 1.6,
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#8cc6e0',
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 14,
   },
   title: {
-    marginTop: 10,
-    fontSize: 28,
+    flex: 1,
+    fontSize: 30,
     fontWeight: '800',
-    color: '#eff9ff',
-  },
-  meta: {
-    marginTop: 8,
-    color: '#c4d8e5',
+    color: '#203440',
   },
   primaryButton: {
-    alignSelf: 'flex-start',
-    marginTop: 18,
     borderRadius: 999,
-    backgroundColor: '#f0a65a',
+    backgroundColor: '#264c61',
     paddingHorizontal: 16,
-    paddingVertical: 11,
+    paddingVertical: 10,
   },
   primaryButtonText: {
-    color: '#1d3d4f',
+    color: '#f5fbff',
     fontWeight: '800',
   },
   centeredCard: {

@@ -53,10 +53,7 @@ function HomeTabsRoute({ navigation }) {
     <HomeTabs.Navigator
       initialRouteName="Timeline"
       screenOptions={{
-        headerStyle: {
-          backgroundColor: '#f6efe5',
-        },
-        headerTintColor: '#2d231f',
+        headerShown: false,
         tabBarActiveTintColor: '#2f6f91',
         tabBarInactiveTintColor: '#8d6b4f',
         tabBarStyle: {

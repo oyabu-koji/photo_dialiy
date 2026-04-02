@@ -10,17 +10,6 @@ export function EntryListScreen({ onCreateEntry, onOpenEntry, refreshKey = 0 }) 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.hero}>
-          <Text style={styles.eyebrow}>Photo Diary</Text>
-          <Text style={styles.title}>イベント一覧</Text>
-          <Text style={styles.subtitle}>
-            詳細は閲覧専用、作成と編集は AddEntry に集約します。
-          </Text>
-          <Pressable onPress={onCreateEntry} style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>新規イベントを作成</Text>
-          </Pressable>
-        </View>
-
         {errorMessage ? (
           <View style={styles.errorCard}>
             <Text style={styles.errorTitle}>一覧の更新に失敗しました</Text>
@@ -47,6 +36,16 @@ export function EntryListScreen({ onCreateEntry, onOpenEntry, refreshKey = 0 }) 
             </View>
           }
         />
+
+        <Pressable
+          accessibilityLabel="新規イベントを作成"
+          accessibilityRole="button"
+          onPress={onCreateEntry}
+          style={styles.fab}
+          testID="create-entry-fab"
+        >
+          <Text style={styles.fabText}>+</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -59,50 +58,14 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-  },
-  hero: {
-    marginBottom: 20,
-    borderRadius: 28,
-    backgroundColor: '#332723',
-    padding: 20,
-  },
-  eyebrow: {
-    color: '#f8d6a7',
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  title: {
-    marginTop: 10,
-    fontSize: 30,
-    fontWeight: '800',
-    color: '#fff7ea',
-  },
-  subtitle: {
-    marginTop: 10,
-    color: '#dfc9b7',
-    lineHeight: 21,
-  },
-  primaryButton: {
-    alignSelf: 'flex-start',
-    marginTop: 16,
-    borderRadius: 999,
-    backgroundColor: '#f0a65a',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  primaryButtonText: {
-    color: '#332723',
-    fontWeight: '800',
+    paddingTop: 8,
   },
   listContent: {
-    paddingBottom: 32,
+    paddingBottom: 112,
   },
   errorCard: {
-    marginBottom: 16,
+    marginBottom: 14,
     borderRadius: 18,
     backgroundColor: '#fff0ee',
     borderWidth: 1,
@@ -145,5 +108,31 @@ const styles = StyleSheet.create({
   emptyBody: {
     marginTop: 6,
     color: '#5f4b43',
+  },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 24,
+    width: 62,
+    height: 62,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2d231f',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 12,
+    },
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+  fabText: {
+    marginTop: -2,
+    color: '#fff9ef',
+    fontSize: 34,
+    lineHeight: 36,
+    fontWeight: '500',
   },
 });

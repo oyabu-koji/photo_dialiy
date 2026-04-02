@@ -1,6 +1,16 @@
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-export function PhotoStrip({ photos, editable = false, onRemovePhoto }) {
+export function PhotoStrip({
+  photos,
+  editable = false,
+  imageHeight = 148,
+  imageWidth = 180,
+  onPhotoPress,
+  onRemovePhoto,
+  showLabels = true,
+  showMeta = true,
+  surface = 'card',
+}) {
   if (photos.length === 0) {
     return (
       <View style={styles.emptyState}>
@@ -14,22 +24,46 @@ export function PhotoStrip({ photos, editable = false, onRemovePhoto }) {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.strip}
+      contentContainerStyle={[styles.strip, surface === 'flat' ? styles.flatStrip : null]}
     >
       {photos.map((photo, index) => (
-        <View key={photo.id} style={styles.photoCard}>
-          <Image
-            accessibilityLabel={`写真 ${index + 1} のプレビュー`}
-            source={{ uri: photo.localUri }}
-            style={styles.photoPreview}
-            testID={`photo-preview-${photo.id}`}
-          />
-          <Text style={styles.photoLabel}>写真 {index + 1}</Text>
-          <Text style={styles.photoMeta}>
-            {photo.lat !== null && photo.lng !== null
-              ? `${photo.lat.toFixed(3)}, ${photo.lng.toFixed(3)}`
-              : '位置なし'}
-          </Text>
+        <View
+          key={photo.id}
+          style={[
+            styles.photoCard,
+            surface === 'flat' ? styles.flatPhotoCard : null,
+            { width: imageWidth },
+          ]}
+        >
+          <Pressable
+            accessibilityLabel={
+              onPhotoPress ? `写真 ${index + 1} を全画面で表示` : `写真 ${index + 1} のプレビュー`
+            }
+            accessibilityRole={onPhotoPress ? 'button' : 'image'}
+            disabled={!onPhotoPress}
+            onPress={onPhotoPress ? () => onPhotoPress(index) : undefined}
+            testID={onPhotoPress ? `photo-trigger-${photo.id}` : undefined}
+          >
+            <Image
+              accessibilityLabel={`写真 ${index + 1} のプレビュー`}
+              source={{ uri: photo.localUri }}
+              style={[
+                styles.photoPreview,
+                {
+                  height: imageHeight,
+                },
+              ]}
+              testID={`photo-preview-${photo.id}`}
+            />
+            {showLabels ? <Text style={styles.photoLabel}>写真 {index + 1}</Text> : null}
+            {showMeta ? (
+              <Text style={styles.photoMeta}>
+                {photo.lat !== null && photo.lng !== null
+                  ? `${photo.lat.toFixed(3)}, ${photo.lng.toFixed(3)}`
+                  : '位置なし'}
+              </Text>
+            ) : null}
+          </Pressable>
           {editable ? (
             <Pressable
               accessibilityLabel={`写真 ${index + 1} を削除`}
@@ -50,17 +84,23 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 4,
   },
+  flatStrip: {
+    paddingVertical: 0,
+  },
   photoCard: {
-    width: 180,
     borderRadius: 16,
     backgroundColor: '#fff',
     padding: 12,
     borderWidth: 1,
     borderColor: '#e5d7cb',
   },
+  flatPhotoCard: {
+    backgroundColor: 'transparent',
+    padding: 0,
+    borderWidth: 0,
+  },
   photoPreview: {
     width: '100%',
-    height: 148,
     borderRadius: 12,
     backgroundColor: '#e9edf1',
   },

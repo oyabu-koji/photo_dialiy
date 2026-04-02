@@ -44,6 +44,7 @@ graph TB
 | フレームワーク | React Native + Expo | モバイル UI と端末機能を一貫して扱える |
 | ナビゲーション | React Navigation | タブ + スタック遷移を組み合わせやすい |
 | 地図 | `react-native-maps` | MapScreen 上でイベントピンを表示するため |
+| 画像ビューア | `react-native-image-viewing` | EntryDetail の写真を full-screen lightbox / swipe / pinch zoom で閲覧するため |
 | 画像取得 | `expo-image-picker` | カメラ / フォトライブラリからの写真選択を扱うため |
 | カメラ | `expo-camera` | 将来のアプリ内撮影導線に備えるため |
 | 位置情報 | `expo-location` | EXIF がない場合の端末位置取得に使うため |
@@ -167,6 +168,7 @@ graph TB
 **責務**:
 - イベントタイムラインの表示
 - 新規作成導線と詳細画面遷移の提供
+- 写真を主役にした一覧レイアウトの表示
 
 **インターフェース**:
 ```javascript
@@ -179,7 +181,12 @@ graph TB
 
 **依存関係**:
 - `useEntryTimeline`
-- `EntryTimelineList`
+- `EntryCard`
+
+**UI 方針**:
+- 画面内 hero や説明文は持たず、一覧とフローティング `+` ボタンを主導線とする
+- 各イベントは写真を大きく見せ、`title` と `date/place 1 行` の要約のみを重ねて表示する
+- 重複した日付 / 位置表示や強いカード枠は避ける
 
 ### MapScreen
 
@@ -188,6 +195,7 @@ graph TB
 - built-in callout によるピンプレビューと詳細遷移
 - 空状態 / エラー状態 / 再読込状態の表示
 - タブ復帰時の再読込結果を反映する
+- 通常時に地図をほぼ全面表示する
 
 **インターフェース**:
 ```javascript
@@ -202,6 +210,11 @@ graph TB
 - `useEntryMap`
 - `EntryMapView`
 
+**UI 方針**:
+- 通常時は hero や常設説明文を持たず、タブバーを除いて地図をほぼ全面表示する
+- loading は中央の小さな overlay、empty / error は下部 floating card で簡潔に扱う
+- marker / built-in callout / 詳細遷移の導線は維持する
+
 ### AddEntryScreen
 
 **責務**:
@@ -210,6 +223,7 @@ graph TB
 - 写真一覧、音声録音、位置解決、保存のフォーム表示
 - 編集モード初期化時の既存値表示
 - タイトル入力欄を上部に配置し、キーボード表示時も編集状態を見失いにくくする
+- 画面内 hero を持たず、タイトル入力を最優先の要素として見せる
 
 **インターフェース**:
 ```javascript
@@ -242,6 +256,8 @@ graph TB
 - 写真、音声、位置、日付、タイトルの表示
 - `Edit` から編集モードへ遷移する導線の提供
 - 写真はプレビュー、音声は再生コントロールとして表示し、 raw path は UI に露出しない
+- 写真タップで full-screen lightbox を開き、横スワイプ、ピンチズーム、close 導線を提供する
+- タイトルの直下に地図プレビューを配置し、写真と地図を主役にした詳細表示を行う
 
 **インターフェース**:
 ```javascript
@@ -254,8 +270,32 @@ graph TB
 
 **依存関係**:
 - `useEntryDetail`
+- `EntryLocationMapPreview`
 - `PhotoCarousel`
+- `EntryPhotoLightboxModal`
 - `VoicePlayer`
+
+### EntryPhotoLightboxModal
+
+**責務**:
+- `EntryDetailScreen` から開く full-screen 写真 viewer を表示する
+- 横スワイプ、ピンチズーム、close 操作を lightbox に閉じ込める
+- 詳細画面の閲覧責務を広げずに写真閲覧体験だけを強化する
+
+**インターフェース**:
+```javascript
+/**
+ * @typedef {Object} EntryPhotoLightboxModalProps
+ * @property {boolean} visible
+ * @property {number} initialIndex
+ * @property {PhotoAsset[]} photos
+ * @property {() => void} onRequestClose
+ */
+```
+
+**依存関係**:
+- `react-native-image-viewing`
+- `buildLightboxImages`
 
 ### useEntryTimeline
 
@@ -488,8 +528,10 @@ sequenceDiagram
 **フロー説明**:
 1. 一覧または地図から `entryId` を選択する
 2. `useEntryDetail` が `EntryDetailAggregate` を取得する
-3. 詳細画面で写真プレビュー、音声再生コントロール、位置、日付を表示する
-4. ユーザーは `Edit` を押して `AddEntryScreen` の編集モードへ遷移できる
+3. 詳細画面でタイトルの直下に地図プレビューを表示し、その下で写真プレビューと音声再生コントロールを表示する
+4. ユーザーが写真プレビューをタップすると full-screen lightbox が開き、横スワイプとピンチズームで閲覧できる
+5. close 後は navigation を変えずに `EntryDetailScreen` の閲覧文脈へ戻る
+6. ユーザーは `Edit` を押して `AddEntryScreen` の編集モードへ遷移できる
 
 ### 地図表示と詳細遷移
 
@@ -576,7 +618,7 @@ stateDiagram-v2
 | 位置情報取得失敗 | EXIF も GPS も取得できない | `位置なし` として保存を継続する |
 | 音声録音失敗 | 録音開始または停止で例外 | 音声なしのまま編集を継続し、再試行を案内する |
 | 保存失敗 | SQLite 書き込みやファイル移動が失敗 | エラーメッセージと再試行ボタンを表示する |
-| 地図表示失敗 | 地図描画またはピン生成に失敗 | 一覧機能へ誘導し、アプリ全体は継続利用可能にする |
+| 地図表示失敗 | 地図描画またはピン生成に失敗 | 下部 floating card で再読み込み導線を出し、アプリ全体は継続利用可能にする |
 
 ## テスト戦略
 
@@ -589,11 +631,14 @@ stateDiagram-v2
 
 ### component test
 - AddEntryScreen で写真選択後に保存ボタンが有効化されること
+- EntryListScreen で hero なしの一覧と FAB が表示されること
 - EntryListScreen から EntryDetailScreen へ遷移できること
+- EntryDetailScreen の写真タップで lightbox が開き、close 後に詳細画面へ戻れること
 - EntryDetailScreen の `Edit` から AddEntryScreen の編集モードへ遷移できること
 - AddEntryScreen の編集モードで既存値が初期表示されること
 - 写真と音声の raw path を UI に表示しないこと
 - MapScreen のピン選択から詳細を開けること
+- MapScreen が full-bleed 化後も overlay と marker 導線を維持すること
 - MapScreen が refreshKey 更新時に再読込されること
 - 権限拒否時に recoverable なエラー UI を表示すること
 
@@ -611,7 +656,10 @@ npx expo start
 - タイトルは自動生成を基本とし、任意編集は補助機能に留める
 - タイトル入力は画面上部に寄せ、キーボード表示時も内容確認と編集を継続しやすくする
 - `EntryDetailScreen` は閲覧に集中させ、編集は `AddEntryScreen` に集約する
+- `EntryDetailScreen` はタイトル、地図、写真の順で視線を流せる構成にし、上部の情報カードは持たない
+- 詳細写真はタップで full-screen lightbox へ入り、close 後も詳細画面の閲覧文脈を維持する
 - 写真と音声はプレビューや状態文言で示し、ファイルパス文字列をそのまま見せない
 - 地図は全イベントが入る初期表示範囲を計算し、最初の文脈把握を優先する
+- `MapScreen` は通常時に説明文を置かず、地図そのものを第一焦点にする
 - 地図プレビューは built-in callout で短く提示し、詳細閲覧は `EntryDetailScreen` に集約する
 - 音声や位置情報が欠けてもイベント保存自体を阻害しない

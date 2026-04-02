@@ -13,7 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PhotoStrip } from '../components/PhotoStrip';
 import { VoiceRecorderPanel } from '../components/VoiceRecorderPanel';
-import { formatEntryDateLabel } from '../logic/createEntryTitle';
 import { useAddEntryForm } from '../hooks/useAddEntryForm';
 
 export function AddEntryScreen({ routeParams, onSaved, onCancel }) {
@@ -90,17 +89,6 @@ export function AddEntryScreen({ routeParams, onSaved, onCancel }) {
           keyboardShouldPersistTaps="handled"
           ref={scrollViewRef}
         >
-          <View style={styles.hero}>
-            <Text style={styles.overline}>{isEditMode ? 'Edit Entry' : 'Create Entry'}</Text>
-            <Text style={styles.title}>{isEditMode ? 'イベントを編集' : 'イベントを作成'}</Text>
-            <Text style={styles.subtitle}>
-              日付: {formatEntryDateLabel(formState.eventDate)}
-            </Text>
-            <Text style={styles.subtitle}>
-              位置: {formState.placeName || '位置なし'}
-            </Text>
-          </View>
-
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>タイトル</Text>
             <TextInput
@@ -181,30 +169,9 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: 18,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 14,
     paddingBottom: 36,
-  },
-  hero: {
-    borderRadius: 24,
-    backgroundColor: '#573f2f',
-    padding: 20,
-  },
-  overline: {
-    textTransform: 'uppercase',
-    letterSpacing: 1.6,
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#ffcf97',
-  },
-  title: {
-    marginTop: 10,
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#fff7ea',
-  },
-  subtitle: {
-    marginTop: 8,
-    color: '#ead6c5',
   },
   section: {
     gap: 12,

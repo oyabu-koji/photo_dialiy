@@ -17,68 +17,13 @@ export function MapScreen({ onOpenEntry, refreshKey = 0 }) {
     status,
   } = useEntryMap(refreshKey);
 
-  if (status === LOAD_STATUS.LOADING && pins.length === 0) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.centeredCard}>
-          <Text style={styles.centeredTitle}>地図を読み込み中...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (status === LOAD_STATUS.ERROR && pins.length === 0) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.centeredCard}>
-          <Text style={styles.centeredTitle}>地図を表示できません</Text>
-          <Text style={styles.centeredBody}>
-            {errorMessage || '位置付きイベントの読み込みに失敗しました'}
-          </Text>
-          <Pressable onPress={reload} style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>再読み込み</Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (status === LOAD_STATUS.READY && pins.length === 0) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.centeredCard}>
-          <Text style={styles.centeredTitle}>位置情報付きイベントがまだありません</Text>
-          <Text style={styles.centeredBody}>
-            写真に位置情報があるイベントを保存すると、ここで地図から振り返れます。
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const showLoadingOverlay = status === LOAD_STATUS.LOADING && pins.length === 0;
+  const showEmptyCard = status === LOAD_STATUS.READY && pins.length === 0;
+  const showErrorCard = status === LOAD_STATUS.ERROR;
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.content}>
-        <View style={styles.hero}>
-          <Text style={styles.overline}>Map</Text>
-          <Text style={styles.title}>地図で振り返る</Text>
-          <Text style={styles.subtitle}>
-            {selectedPin
-              ? `${selectedPin.title} のピンを選択中`
-              : 'ピンを選ぶと、写真付きの callout から詳細へ移動できます。'}
-          </Text>
-        </View>
-
-        {status === LOAD_STATUS.ERROR && errorMessage ? (
-          <View style={styles.warningCard}>
-            <Text style={styles.warningTitle}>一部のイベントを再読込できませんでした</Text>
-            <Text style={styles.warningBody}>{errorMessage}</Text>
-            <Pressable onPress={reload} style={styles.warningButton}>
-              <Text style={styles.warningButtonText}>再読み込み</Text>
-            </Pressable>
-          </View>
-        ) : null}
-
         <EntryMapView
           initialRegion={initialRegion}
           onOpenEntry={onOpenEntry}
@@ -86,6 +31,43 @@ export function MapScreen({ onOpenEntry, refreshKey = 0 }) {
           pins={pins}
           selectedEntryId={selectedEntryId}
         />
+
+        {selectedPin ? (
+          <View style={styles.selectionChip} testID="map-selection-chip">
+            <Text numberOfLines={1} style={styles.selectionChipText}>
+              {selectedPin.title}
+            </Text>
+          </View>
+        ) : null}
+
+        {showLoadingOverlay ? (
+          <View style={styles.loadingChip} testID="map-loading-overlay">
+            <Text style={styles.loadingChipText}>読み込み中...</Text>
+          </View>
+        ) : null}
+
+        {showEmptyCard ? (
+          <View style={styles.bottomCard} testID="map-empty-overlay">
+            <Text style={styles.bottomCardTitle}>位置情報付きイベントがまだありません</Text>
+            <Text style={styles.bottomCardBody}>
+              位置つきの写真イベントを保存すると、ここにピンが並びます。
+            </Text>
+          </View>
+        ) : null}
+
+        {showErrorCard ? (
+          <View style={styles.bottomCard} testID="map-error-overlay">
+            <Text style={styles.bottomCardTitle}>
+              {pins.length === 0 ? '地図を表示できません' : '一部のイベントを再読込できませんでした'}
+            </Text>
+            <Text style={styles.bottomCardBody}>
+              {errorMessage || '位置付きイベントの読み込みに失敗しました'}
+            </Text>
+            <Pressable onPress={reload} style={styles.bottomCardButton}>
+              <Text style={styles.bottomCardButtonText}>再読み込み</Text>
+            </Pressable>
+          </View>
+        ) : null}
       </View>
     </SafeAreaView>
   );
@@ -94,91 +76,76 @@ export function MapScreen({ onOpenEntry, refreshKey = 0 }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#eef3f5',
+    backgroundColor: '#d9e8ee',
   },
   content: {
     flex: 1,
-    gap: 16,
-    padding: 20,
-    paddingBottom: 24,
+    overflow: 'hidden',
   },
-  hero: {
-    borderRadius: 24,
-    backgroundColor: '#20495d',
-    padding: 20,
-  },
-  overline: {
-    color: '#95d2e8',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1.6,
-    textTransform: 'uppercase',
-  },
-  title: {
-    marginTop: 10,
-    color: '#f4fbff',
-    fontSize: 28,
-    fontWeight: '800',
-  },
-  subtitle: {
-    marginTop: 8,
-    color: '#c8dce7',
-    lineHeight: 20,
-  },
-  centeredCard: {
-    margin: 20,
-    borderRadius: 22,
-    backgroundColor: '#fff',
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#d3dfe6',
-  },
-  centeredTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#223745',
-  },
-  centeredBody: {
-    marginTop: 8,
-    color: '#5b7281',
-  },
-  primaryButton: {
-    alignSelf: 'flex-start',
-    marginTop: 18,
+  loadingChip: {
+    position: 'absolute',
+    top: '50%',
+    alignSelf: 'center',
     borderRadius: 999,
-    backgroundColor: '#2f6f91',
-    paddingHorizontal: 16,
-    paddingVertical: 11,
+    backgroundColor: 'rgba(29, 50, 63, 0.84)',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    transform: [
+      {
+        translateY: -18,
+      },
+    ],
   },
-  primaryButtonText: {
-    color: '#fff',
-    fontWeight: '800',
-  },
-  warningCard: {
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#e1c7a8',
-    backgroundColor: '#fff8ed',
-    padding: 16,
-  },
-  warningTitle: {
-    color: '#6c4822',
-    fontSize: 15,
+  loadingChipText: {
+    color: '#f6fbff',
     fontWeight: '700',
   },
-  warningBody: {
-    marginTop: 6,
-    color: '#7b5b38',
+  selectionChip: {
+    position: 'absolute',
+    top: 20,
+    left: 16,
+    right: 16,
+    alignItems: 'flex-start',
   },
-  warningButton: {
+  selectionChipText: {
+    maxWidth: '100%',
+    borderRadius: 999,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(29, 50, 63, 0.78)',
+    color: '#f6fbff',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    fontWeight: '700',
+  },
+  bottomCard: {
+    position: 'absolute',
+    right: 16,
+    bottom: 20,
+    left: 16,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 250, 243, 0.96)',
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+  },
+  bottomCardTitle: {
+    color: '#2a3945',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  bottomCardBody: {
+    marginTop: 6,
+    color: '#5e717f',
+    lineHeight: 19,
+  },
+  bottomCardButton: {
     alignSelf: 'flex-start',
     marginTop: 12,
     borderRadius: 999,
-    backgroundColor: '#6c4822',
+    backgroundColor: '#274b5d',
     paddingHorizontal: 14,
     paddingVertical: 9,
   },
-  warningButtonText: {
+  bottomCardButtonText: {
     color: '#fff',
     fontWeight: '700',
   },

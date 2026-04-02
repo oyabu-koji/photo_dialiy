@@ -33,6 +33,7 @@
 | `expo-av` | Expo SDK 54 対応版 | 音声録音・再生 | 音声メモの録音と再生を一元化できる |
 | `expo-sqlite` | Expo SDK 54 対応版 | ローカル永続化 | Entry と Photo のメタデータを軽量に保持できる |
 | `react-native-maps` | Expo SDK 54 対応版 | 地図表示 | イベントの場所ベース閲覧を支える |
+| `react-native-image-viewing` | 0.2.x | full-screen 写真 lightbox | EntryDetail で横スワイプ、ピンチズーム、swipe-to-close を managed workflow のまま扱うため |
 
 ### 開発ツール
 
@@ -150,6 +151,7 @@ Platform Layer
 | React Native / Expo | 実行基盤 | Expo SDK 54 互換性を最優先して管理する |
 | Expo modules | 写真、音声、位置、SQLite | 追加時は `npx expo install` を使い、SDK 互換版を採用する |
 | React Navigation | 画面遷移 | Expo 互換性を維持して更新する |
+| `react-native-image-viewing` | full-screen 写真 viewer | Expo managed workflow と Detail 画面責務の整合を崩さない範囲で管理する |
 | Jest | test runner | `jest-expo` と整合するメジャーを維持する |
 | `jest-expo` | Expo test preset | Expo SDK 54 互換性を優先して管理する |
 | `@testing-library/react-native` | component test | React Native 互換性を優先して管理する |

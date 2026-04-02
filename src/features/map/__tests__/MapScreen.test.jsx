@@ -16,13 +16,15 @@ describe('MapScreen', () => {
 
   it('shows a callout and opens the entry detail route', async () => {
     const onOpenEntry = jest.fn();
-    const { getByTestId } = render(<MapScreen onOpenEntry={onOpenEntry} />);
+    const { getByTestId, queryByText } = render(<MapScreen onOpenEntry={onOpenEntry} />);
 
     await waitFor(() => {
       expect(getByTestId('map-marker-entry-1')).toBeTruthy();
     });
 
+    expect(queryByText('地図で振り返る')).toBeNull();
     fireEvent.press(getByTestId('map-marker-entry-1'));
+    expect(getByTestId('map-selection-chip')).toBeTruthy();
 
     fireEvent.press(getByTestId('map-callout-entry-1'));
 
@@ -43,16 +45,18 @@ describe('MapScreen', () => {
     }));
     resetAppState(seed);
 
-    const { getByText } = render(<MapScreen onOpenEntry={jest.fn()} />);
+    const { getByTestId, getByText } = render(<MapScreen onOpenEntry={jest.fn()} />);
 
     await waitFor(() => {
       expect(getByText('位置情報付きイベントがまだありません')).toBeTruthy();
     });
+
+    expect(getByTestId('map-empty-overlay')).toBeTruthy();
   });
 
   it('reloads map data when the refreshKey changes', async () => {
     const onOpenEntry = jest.fn();
-    const { getByTestId, getByText, rerender } = render(
+    const { getAllByText, getByTestId, rerender } = render(
       <MapScreen onOpenEntry={onOpenEntry} refreshKey={0} />
     );
 
@@ -62,9 +66,7 @@ describe('MapScreen', () => {
 
     fireEvent.press(getByTestId('map-marker-entry-1'));
 
-    await waitFor(() => {
-      expect(getByText('神田川の散歩 2026/03/28')).toBeTruthy();
-    });
+    expect(getAllByText('神田川の散歩 2026/03/28').length).toBeGreaterThan(0);
 
     const detail = await getEntryDetailAggregate('entry-1');
     await saveEntryDraft({
@@ -88,7 +90,7 @@ describe('MapScreen', () => {
     fireEvent.press(getByTestId('map-marker-entry-1'));
 
     await waitFor(() => {
-      expect(getByText('地図で更新したタイトル')).toBeTruthy();
+      expect(getAllByText('地図で更新したタイトル').length).toBeGreaterThan(0);
     });
   });
 });

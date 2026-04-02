@@ -152,3 +152,53 @@ jest.mock('react-native-maps', () => {
     Marker,
   };
 });
+
+jest.mock('react-native-image-viewing', () => {
+  const React = require('react');
+  const { Pressable, Text, View } = require('react-native');
+
+  function MockImageViewing({
+    HeaderComponent,
+    imageIndex = 0,
+    images = [],
+    onImageIndexChange,
+    onRequestClose,
+    visible,
+  }) {
+    if (!visible) {
+      return null;
+    }
+
+    return React.createElement(
+      View,
+      {
+        testID: 'entry-photo-lightbox-viewer',
+      },
+      HeaderComponent ? React.createElement(HeaderComponent, { imageIndex }) : null,
+      React.createElement(Text, { testID: 'entry-photo-lightbox-image-count' }, images.length),
+      React.createElement(
+        Pressable,
+        {
+          accessibilityRole: 'button',
+          onPress: () => onImageIndexChange?.(Math.min(images.length - 1, imageIndex + 1)),
+          testID: 'mock-lightbox-next',
+        },
+        React.createElement(Text, null, 'Next')
+      ),
+      React.createElement(
+        Pressable,
+        {
+          accessibilityRole: 'button',
+          onPress: () => onRequestClose?.(),
+          testID: 'mock-lightbox-dismiss',
+        },
+        React.createElement(Text, null, 'Dismiss')
+      )
+    );
+  }
+
+  return {
+    __esModule: true,
+    default: MockImageViewing,
+  };
+});

@@ -103,7 +103,11 @@ project-root/
 
 **配置ファイル**:
 - `EntryCard.jsx`
+- `EntryLocationMapPreview.jsx`
+- `EntryPhotoLightboxModal.jsx`
+- `PhotoCarousel.jsx`
 - `PhotoStrip.jsx`
+- `VoicePlayer.jsx`
 - `VoiceRecorderPanel.jsx`
 
 **命名規則**:
@@ -134,6 +138,7 @@ project-root/
 **役割**: タイトル生成、位置計算、入力検証などの純粋関数を配置する
 
 **配置ファイル**:
+- `buildLightboxImages.js`
 - `createEntryTitle.js`
 - `resolveEntryCoordinates.js`
 - `validateEntryDraft.js`
@@ -192,8 +197,11 @@ project-root/
 **役割**: entries feature の unit test / component test を配置する
 
 **配置ファイル**:
+- `EntryPhotoLightboxModal.test.jsx`
 - `useAddEntryForm.test.js`
+- `EntryDetailScreen.test.jsx`
 - `EntryListScreen.test.jsx`
+- `PhotoCarousel.test.jsx`
 
 **命名規則**:
 - `*.test.js` / `*.test.jsx`

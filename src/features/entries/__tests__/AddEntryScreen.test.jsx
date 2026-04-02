@@ -25,8 +25,10 @@ describe('AddEntryScreen', () => {
     });
 
     expect(getByText('録音済みの音声メモがあります。')).toBeTruthy();
-    expect(getByText(/位置: 神田川の散歩/)).toBeTruthy();
     expect(getByTestId('photo-preview-photo-entry-1-1')).toBeTruthy();
+    expect(queryByText('Edit Entry')).toBeNull();
+    expect(queryByText('イベントを編集')).toBeNull();
+    expect(queryByText(/位置:/)).toBeNull();
     expect(queryByText('file:///voices/entry-1.m4a')).toBeNull();
     expect(queryByText('file:///photos/entry-1-cover.jpg')).toBeNull();
 

@@ -52,8 +52,6 @@ export function EntryMapView({
 const styles = StyleSheet.create({
   map: {
     flex: 1,
-    borderRadius: 24,
-    overflow: 'hidden',
   },
   callout: {
     width: 220,
